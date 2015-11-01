@@ -18,10 +18,6 @@ namespace WindowsFormsApplication1
 {
     public partial class Form1 : Form
     {
-        [DllImport("user32.dll")]
-        private static extern int ShowWindow(IntPtr hWnd, uint Msg);
-        private const uint SW_RESTORE = 0x09;
-
         private IDisposable _subscription;
 
         private Icon[] _statusIcons = new Icon[10];
@@ -45,7 +41,6 @@ namespace WindowsFormsApplication1
                                      {
                                          Show();
                                          WindowState = FormWindowState.Normal;
-                                         //ShowWindow(Handle, SW_RESTORE);
                                      }
                                  };
         }
