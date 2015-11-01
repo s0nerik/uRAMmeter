@@ -43,7 +43,9 @@ namespace WindowsFormsApplication1
                                  {
                                      if (WindowState == FormWindowState.Minimized)
                                      {
-                                         ShowWindow(Handle, SW_RESTORE);
+                                         Show();
+                                         WindowState = FormWindowState.Normal;
+                                         //ShowWindow(Handle, SW_RESTORE);
                                      }
                                  };
         }
@@ -89,6 +91,14 @@ namespace WindowsFormsApplication1
 
             notifyIcon1.Icon = _statusIcons[(int) Math.Ceiling(usedGb / totalGb * 10)];
             notifyIcon1.Text = usedMemoryText;
+        }
+
+        private void Form1_Resize(object sender, EventArgs e)
+        {
+            if (FormWindowState.Minimized == WindowState)
+            {
+                Hide();
+            }
         }
     }
 }
