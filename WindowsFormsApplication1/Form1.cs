@@ -7,6 +7,7 @@ using System.Drawing;
 using System.Linq;
 using System.Reactive.Concurrency;
 using System.Reactive.Linq;
+using System.Runtime.InteropServices;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
@@ -17,16 +18,34 @@ namespace WindowsFormsApplication1
 {
     public partial class Form1 : Form
     {
+        [DllImport("user32.dll")]
+        private static extern int ShowWindow(IntPtr hWnd, uint Msg);
+        private const uint SW_RESTORE = 0x09;
+
         private IDisposable _subscription;
+
+        private Icon[] _statusIcons = new Icon[10];
 
         public Form1()
         {
             InitializeComponent();
+
+            for (int i = 0; i < 10; i++)
+            {
+                _statusIcons[i] = Icon.ExtractAssociatedIcon(@"icons\"+(i * 10 + 10)+"p.ico");
+            }
         }
 
         private void Form1_Load(object sender, EventArgs e)
         {
             StartRefreshingMemory();
+            notifyIcon1.Click += (o, args) =>
+                                 {
+                                     if (WindowState == FormWindowState.Minimized)
+                                     {
+                                         ShowWindow(Handle, SW_RESTORE);
+                                     }
+                                 };
         }
 
         private void refreshRate_ValueChanged(object sender, EventArgs e)
@@ -38,7 +57,7 @@ namespace WindowsFormsApplication1
         {
             _subscription?.Dispose();
             _subscription = Observable.Interval(TimeSpan.FromSeconds((double)refreshRate.Value))
-                                      .ObserveOn(Scheduler.Default)
+                                      .ObserveOn(SynchronizationContext.Current)
                                       .Subscribe(_ => UpdateUsedMemory());
         }
 
@@ -64,8 +83,12 @@ namespace WindowsFormsApplication1
             var totalGb = totalMemory*10e-10;
             usedMemoryBar.Value = (int) (usedGb / totalGb * 100f);
 
-            usedMemoryLabel.Text =
-                string.Format("{0:0.##} / {1:0.##} GB", usedGb, totalGb);
+            var usedMemoryText = string.Format("{0:0.##} / {1:0.##} GB", usedGb, totalGb);
+
+            usedMemoryLabel.Text = usedMemoryText;
+
+            notifyIcon1.Icon = _statusIcons[(int) Math.Ceiling(usedGb / totalGb * 10)];
+            notifyIcon1.Text = usedMemoryText;
         }
     }
 }
