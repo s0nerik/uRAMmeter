@@ -61,6 +61,8 @@ namespace WindowsFormsApplication1
         private void UpdateUsedMemory()
         {
             var totalMemory = new ComputerInfo().TotalPhysicalMemory;
+            var freeMemory = new ComputerInfo().AvailablePhysicalMemory;
+            var usedMemory = totalMemory - freeMemory;
 
             long memory = 0;
             Process[] processes;
@@ -76,9 +78,11 @@ namespace WindowsFormsApplication1
             Console.WriteLine("MegaBytes: {0}.", memory * 10e-7);
             Console.WriteLine("GigaBytes: {0}.", memory * 10e-10);
 
-            var usedGb = memory*10e-10;
+            var usedGb = usedMemory*10e-10;
             var totalGb = totalMemory*10e-10;
-            usedMemoryBar.Value = (int) (usedGb / totalGb * 100f);
+            var usedPercent = (int)(usedGb / totalGb * 100f);
+
+            usedMemoryBar.Value = usedPercent > 100 ? 100 : usedPercent;
 
             var usedMemoryText = string.Format("{0:0.##} / {1:0.##} GB", usedGb, totalGb);
 
